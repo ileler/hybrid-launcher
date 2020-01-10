@@ -5,6 +5,7 @@ import (
     "fmt"
     "net"
     "time"
+    "strconv"
     "runtime"
     "os/user"
     "os/exec"
@@ -13,7 +14,15 @@ import (
     "path/filepath"
 )
 
-func Start() {
+type Config struct {
+    Port    int
+}
+
+func Start(c *Config) {
+    var port int
+    if c != nil {
+        port = c.Port
+    }
     myself, error := user.Current()
     if error != nil {
         panic(error)
@@ -51,7 +60,7 @@ func Start() {
     fs := http.FileServer(http.Dir("static/"))
     http.Handle("/", http.StripPrefix("/", fs))
 
-    listener, err := net.Listen("tcp", ":0")
+    listener, err := net.Listen("tcp", ":" + strconv.Itoa(port))
     if err != nil {
         panic(err)
     }
