@@ -1,4 +1,4 @@
-package main
+package launcher
 
 import (
     "os"
@@ -13,12 +13,12 @@ import (
     "path/filepath"
 )
 
-func main() {
+func Start() {
     myself, error := user.Current()
     if error != nil {
         panic(error)
     }
-    homedir := myself.HomeDir + "/.mst/"
+    homedir := myself.HomeDir + "/.hl/"
     pid := homedir + ".pid"
     var addr string
 
