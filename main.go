@@ -14,21 +14,40 @@ import (
     "path/filepath"
 )
 
+var pid string
+
 type Config struct {
+    Pid     string
     Port    int
 }
 
-func Start(c *Config) {
+func Exit() {
+    os.Remove(pid)
+    go os.Exit(0)
+}
+
+
+func Start() {
+    StartWithConfig(nil)
+}
+
+func StartWithConfig(c *Config) {
+
     var port int
     if c != nil {
         port = c.Port
     }
-    myself, error := user.Current()
-    if error != nil {
-        panic(error)
+
+    if c == nil || c.Pid == "" {
+        myself, error := user.Current()
+        if error != nil {
+            panic(error)
+        }
+        homedir := myself.HomeDir + "/.hl/"
+        pid = homedir + ".pid"
+    } else {
+        pid = c.Pid
     }
-    homedir := myself.HomeDir + "/.hl/"
-    pid := homedir + ".pid"
     var addr string
 
     if _, err := os.Stat(pid); err == nil {
@@ -51,12 +70,6 @@ func Start(c *Config) {
         os.Remove(pid)
     }
 
-
-    http.HandleFunc("/api", func (w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json")
-        fmt.Fprintf(w, "{\"hello\": \"world\"}")
-    })
-
     fs := http.FileServer(http.Dir("static/"))
     http.Handle("/", http.StripPrefix("/", fs))
 
@@ -73,11 +86,12 @@ func Start(c *Config) {
         panic(err)
     }
     file, err := os.Create(pid)
-    defer file.Close()
     file.WriteString(addr)
+    file.Close()
 
     go open(addr)
     panic(http.Serve(listener, nil))
+
 }
 
 // open opens the specified URL in the default browser of the user.
