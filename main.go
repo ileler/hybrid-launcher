@@ -17,6 +17,7 @@ import (
 var pid string
 
 type Config struct {
+    HandleRoot  bool
     Pid     string
     Port    int
 }
@@ -70,8 +71,10 @@ func StartWithConfig(c *Config) {
         os.Remove(pid)
     }
 
-    fs := http.FileServer(http.Dir("static/"))
-    http.Handle("/", http.StripPrefix("/", fs))
+    if c == nil || c.HandleRoot {
+        fs := http.FileServer(http.Dir("static/"))
+        http.Handle("/", http.StripPrefix("/", fs))
+    }
 
     listener, err := net.Listen("tcp", ":" + strconv.Itoa(port))
     if err != nil {
