@@ -20,6 +20,17 @@ type Config struct {
     HandleRoot  bool
     Pid     string
     Port    int
+    Open    bool
+}
+
+func DefaultConfig() *Config {
+    pid := _pid()
+    return &Config{ 
+        Port: 0,
+        Open: true,
+        Pid: *pid,
+        HandleRoot: true,
+    }
 }
 
 func Exit() {
@@ -57,6 +68,11 @@ func Start() {
 
 func StartWithConfig(c *Config) {
 
+    open := true
+    if c != nil {
+        open = c.Open
+    }
+
     var port int
     if c != nil {
         port = c.Port
@@ -70,7 +86,9 @@ func StartWithConfig(c *Config) {
     addr := Addr(&pid)
 
     if addr != nil && *addr != "" {
-        go _open(*addr)
+        if (open) {
+            go Open(*addr)
+        }
         time.Sleep(time.Second * 1)
         os.Exit(0)
     }
@@ -96,23 +114,15 @@ func StartWithConfig(c *Config) {
     file.WriteString(_addr)
     file.Close()
 
-    go _open(_addr)
+    if (open) {
+        go Open(_addr)
+    }
     panic(http.Serve(listener, nil))
 
 }
 
-func _pid() *string {
-    myself, error := user.Current()
-    if error != nil {
-        panic(error)
-    }
-    homedir := myself.HomeDir + "/.hl/"
-    pid = homedir + ".pid"
-    return &pid
-}
-
 // open opens the specified URL in the default browser of the user.
-func _open(url string) error {
+func Open(url string) error {
     var cmd string
     var args []string
 
@@ -127,4 +137,14 @@ func _open(url string) error {
     }
     args = append(args, url)
     return exec.Command(cmd, args...).Start()
+}
+
+func _pid() *string {
+    myself, error := user.Current()
+    if error != nil {
+        panic(error)
+    }
+    homedir := myself.HomeDir + "/.hl/"
+    pid = homedir + ".pid"
+    return &pid
 }
