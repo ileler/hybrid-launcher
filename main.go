@@ -54,7 +54,7 @@ func Addr(pid *string) *string {
         }
         client := &http.Client{ Timeout: time.Second * 1 }
         resp, err := client.Do(req)
-        if err == nil && resp.StatusCode == 200 {
+        if err == nil && resp != nil {
             return &addr
         }
         os.Remove(*pid)
@@ -112,7 +112,7 @@ func StartWithConfig(c *Config) {
     }
     file, err := os.Create(pid)
     file.WriteString(_addr)
-    file.Close()
+    //file.Close()
 
     if (open) {
         go Open(_addr)
