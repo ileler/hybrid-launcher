@@ -63,7 +63,7 @@ func Addr(pid *string) *string {
 }
 
 func Start() {
-    StartWithConfig(nil)
+    StartWithConfig(DefaultConfig())
 }
 
 func StartWithConfig(c *Config) {
