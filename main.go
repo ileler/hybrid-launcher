@@ -5,6 +5,7 @@ import (
     "fmt"
     "net"
     "time"
+    "syscall"
     "strconv"
     "runtime"
     "os/user"
@@ -136,7 +137,9 @@ func Open(url string) error {
         cmd = "xdg-open"
     }
     args = append(args, url)
-    return exec.Command(cmd, args...).Start()
+    cmd_instance := exec.Command(cmd, args...)
+    cmd_instance.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+    return cmd_instance.Start()
 }
 
 func _pid() *string {
